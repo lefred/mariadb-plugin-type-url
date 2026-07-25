@@ -40,10 +40,17 @@ INSTALL SONAME 'type_url';
 Confirm that they loaded:
 
 ```sql
-SELECT PLUGIN_NAME, PLUGIN_TYPE, PLUGIN_STATUS
-FROM information_schema.PLUGINS
-WHERE PLUGIN_NAME IN ('url', 'url_scheme', 'url_host', 'url_path')
-ORDER BY PLUGIN_NAME;
+SELECT plugin_name, plugin_type, plugin_library, plugin_description,
+plugin_author FROM information_schema.PLUGINS WHERE plugin_library LIKE 'type_url.so';
++-------------+-------------+----------------+-------------------------------+---------------+
+| plugin_name | plugin_type | plugin_library | plugin_description            | plugin_author |
++-------------+-------------+----------------+-------------------------------+---------------+
+| url         | DATA TYPE   | type_url.so    | Validated URL data type       | lefred        |
+| url_scheme  | FUNCTION    | type_url.so    | Extract the scheme from a URL | lefred        |
+| url_host    | FUNCTION    | type_url.so    | Extract the host from a URL   | lefred        |
+| url_path    | FUNCTION    | type_url.so    | Extract the path from a URL   | lefred        |
++-------------+-------------+----------------+-------------------------------+---------------+
+4 rows in set (0.002 sec)
 ```
 
 `INSTALL SONAME` persists the plugins in `mysql.plugin`, so MariaDB loads them
@@ -94,12 +101,19 @@ SELECT
   URL_SCHEME(target) AS scheme,
   URL_HOST(target) AS host,
   URL_PATH(target) AS path
-FROM links;
+FROM links\G
 
--- https://example.com/docs/start?q=sql#install
---   -> https | example.com           | /docs/start
--- ftp://downloads.example.org/pub/archive.tar.gz
---   -> ftp   | downloads.example.org | /pub/archive.tar.gz
+*************************** 1. row ***************************
+target: https://example.com/docs/start?q=sql#install
+scheme: https
+  host: example.com
+  path: /docs/start
+*************************** 2. row ***************************
+target: ftp://downloads.example.org/pub/archive.tar.gz
+scheme: ftp
+  host: downloads.example.org
+  path: /pub/archive.tar.gz
+2 rows in set (0.001 sec)
 ```
 
 The query string and fragment remain part of the stored value but are not
@@ -122,7 +136,12 @@ An invalid explicit conversion returns `NULL`:
 
 ```sql
 SELECT CAST('not a URL' AS URL);
--- NULL
++--------------------------+
+| CAST('not a URL' AS URL) |
++--------------------------+
+| NULL                     |
++--------------------------+
+1 row in set (0.001 sec)
 ```
 
 ## Authority, ports, and IPv6
@@ -134,12 +153,22 @@ SELECT
   URL_SCHEME('https://alice:secret@example.com:8443/private') AS scheme,
   URL_HOST('https://alice:secret@example.com:8443/private') AS host,
   URL_PATH('https://alice:secret@example.com:8443/private') AS path;
--- https | example.com | /private
++--------+-------------+----------+
+| scheme | host        | path     |
++--------+-------------+----------+
+| https  | example.com | /private |
++--------+-------------+----------+
+1 row in set (0.000 sec)
 
 SELECT
   URL_HOST('http://[2001:db8::1]:8080/index.html') AS host,
   URL_PATH('http://[2001:db8::1]:8080/index.html') AS path;
--- 2001:db8::1 | /index.html
++-------------+-------------+
+| host        | path        |
++-------------+-------------+
+| 2001:db8::1 | /index.html |
++-------------+-------------+
+1 row in set (0.000 sec)
 ```
 
 Schemes without an authority have no host. Their scheme-specific value is
@@ -150,7 +179,12 @@ SELECT
   URL_SCHEME('mailto:user@example.com') AS scheme,
   URL_HOST('mailto:user@example.com') AS host,
   URL_PATH('mailto:user@example.com') AS path;
--- mailto | NULL | user@example.com
++--------+------+------------------+
+| scheme | host | path             |
++--------+------+------------------+
+| mailto | NULL | user@example.com |
++--------+------+------------------+
+1 row in set (0.000 sec)
 ```
 
 ## Validation
