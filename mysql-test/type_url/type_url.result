@@ -1,0 +1,34 @@
+#
+# URL data type 
+#
+INSTALL SONAME 'type_url';
+CREATE TABLE urls (id INT PRIMARY KEY, value URL);
+INSERT INTO urls VALUES
+(1, 'https://user:pass@example.com:8443/a/b?q=1#frag'),
+(2, 'mailto:user@example.com'),
+(3, 'http://[2001:db8::1]/index.html');
+SELECT id, value, URL_SCHEME(value), URL_HOST(value), URL_PATH(value)
+FROM urls ORDER BY id;
+id	value	URL_SCHEME(value)	URL_HOST(value)	URL_PATH(value)
+1	https://user:pass@example.com:8443/a/b?q=1#frag	https	example.com	/a/b
+2	mailto:user@example.com	mailto	NULL	user@example.com
+3	http://[2001:db8::1]/index.html	http	2001:db8::1	/index.html
+SELECT CAST('ftp://example.org/pub/file' AS URL);
+CAST('ftp://example.org/pub/file' AS URL)
+ftp://example.org/pub/file
+SELECT CAST('not a url' AS URL);
+CAST('not a url' AS URL)
+NULL
+SELECT URL('https://mariadb.org/kb/en/');
+URL('https://mariadb.org/kb/en/')
+https://mariadb.org/kb/en/
+INSERT INTO urls VALUES (4, 'not a url');
+ERROR HY000: Incorrect URL value: 'not a url'
+INSERT INTO urls VALUES (5, 'https://example.com/%xx');
+ERROR HY000: Incorrect URL value: 'https://example.com/%xx'
+INSERT INTO urls VALUES (6, 'https://example.com:99999/');
+ERROR HY000: Incorrect URL value: 'https://example.com:99999/'
+SELECT URL_SCHEME(NULL), URL_HOST(NULL), URL_PATH(NULL);
+URL_SCHEME(NULL)	URL_HOST(NULL)	URL_PATH(NULL)
+NULL	NULL	NULL
+DROP TABLE urls;

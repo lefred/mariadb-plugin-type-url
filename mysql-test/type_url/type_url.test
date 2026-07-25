@@ -1,0 +1,29 @@
+# Copyright (c) 2026 lefred
+
+--echo #
+--echo # URL data type 
+--echo #
+
+INSTALL SONAME 'type_url';
+
+CREATE TABLE urls (id INT PRIMARY KEY, value URL);
+INSERT INTO urls VALUES
+  (1, 'https://user:pass@example.com:8443/a/b?q=1#frag'),
+  (2, 'mailto:user@example.com'),
+  (3, 'http://[2001:db8::1]/index.html');
+
+SELECT id, value, URL_SCHEME(value), URL_HOST(value), URL_PATH(value)
+  FROM urls ORDER BY id;
+SELECT CAST('ftp://example.org/pub/file' AS URL);
+SELECT CAST('not a url' AS URL);
+SELECT URL('https://mariadb.org/kb/en/');
+
+--error ER_WRONG_VALUE
+INSERT INTO urls VALUES (4, 'not a url');
+--error ER_WRONG_VALUE
+INSERT INTO urls VALUES (5, 'https://example.com/%xx');
+--error ER_WRONG_VALUE
+INSERT INTO urls VALUES (6, 'https://example.com:99999/');
+
+SELECT URL_SCHEME(NULL), URL_HOST(NULL), URL_PATH(NULL);
+DROP TABLE urls;
