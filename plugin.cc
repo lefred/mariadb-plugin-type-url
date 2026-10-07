@@ -46,9 +46,9 @@ static Plugin_function function_url_host(&create_url_host);
 static Plugin_function function_url_path(&create_url_path);
 
 #define URL_PLUGIN(kind, descriptor, plugin_name, description) \
-  { kind, descriptor, plugin_name, "lefred", description, \
-    PLUGIN_LICENSE_GPL, 0, 0, 0x0100, NULL, NULL, "0.2.0", \
-    MariaDB_PLUGIN_MATURITY_BETA }
+  { kind, descriptor, plugin_name, PLUGIN_AUTHOR, PLUGIN_DESCRIPTION, \
+    PLUGIN_LICENSE, 0, 0, PLUGIN_HEX_VERSION, NULL, NULL, PLUGIN_VERSION, \
+    PLUGIN_MATURITY }
 
 maria_declare_plugin(type_url)
   URL_PLUGIN(MariaDB_DATA_TYPE_PLUGIN, &type_descriptor, "url",

@@ -14,13 +14,86 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1335  USA
 
-MYSQL_ADD_PLUGIN(type_url
-                 plugin.cc item_urlfunc.cc sql_type_url.cc url_parser.cc
-                 MODULE_ONLY RECOMPILE_FOR_EMBEDDED)
 
-ADD_EXECUTABLE(type_url_parser_test EXCLUDE_FROM_ALL
-               tests/url_parser_test.cc url_parser.cc)
-TARGET_INCLUDE_DIRECTORIES(type_url_parser_test PRIVATE
-                           ${CMAKE_CURRENT_SOURCE_DIR})
-ADD_TEST(NAME type_url_parser COMMAND type_url_parser_test)
+cmake_minimum_required(VERSION 3.12)
+
+project(uuid_more)
+
+set(PLUGIN_NAME "type_url")
+set(PLUGIN_AUTHOR "lefred")
+set(PLUGIN_VERSION "0.2.2")
+set(PLUGIN_HEX_VERSION "0x000202")
+set(PLUGIN_DESCRIPTION "Adds and validates URL data type")
+set(PLUGIN_LICENSE "PLUGIN_LICENSE_GPL")
+SET(PLUGIN_MATURITY "MariaDB_PLUGIN_MATURITY_BETA")
+
+set(TYPE_PLUGIN_SOURCES
+    plugin.cc
+    item_urlfunc.cc 
+    sql_type_url.cc 
+    url_parser.cc
+)
+
+#
+# New MariaDB external plugin infrastructure.
+# QUIET is important so older MariaDB versions can fall back to
+# MYSQL_ADD_PLUGIN().
+#
+find_package(mariadb-plugin QUIET)
+
+if(COMMAND MARIADB_ADD_PLUGIN)
+
+    message(STATUS "Building ${PLUGIN_NAME} using MARIADB_ADD_PLUGIN")
+
+    MARIADB_ADD_PLUGIN(${PLUGIN_NAME}
+        ${TYPE_PLUGIN_SOURCES}
+        MODULE_ONLY
+        RECOMPILE_FOR_EMBEDDED
+        AUTHOR "${PLUGIN_AUTHOR}"
+        VERSION "${PLUGIN_VERSION}"
+        DESCRIPTION "${PLUGIN_DESCRIPTION}"
+    )
+
+    #
+    # MARIADB_ADD_PLUGIN does not provide a maturity definition.
+    #
+    target_compile_definitions(${PLUGIN_NAME} PRIVATE
+        PLUGIN_MATURITY=${PLUGIN_MATURITY}
+    )
+
+elseif(COMMAND MYSQL_ADD_PLUGIN)
+
+    message(STATUS "Building ${PLUGIN_NAME} using legacy MYSQL_ADD_PLUGIN")
+
+    MYSQL_ADD_PLUGIN(${PLUGIN_NAME}
+        ${TYPE_PLUGIN_SOURCES}
+        MODULE_ONLY
+        RECOMPILE_FOR_EMBEDDED
+        COMPONENT Test
+    )
+
+    #
+    # MARIADB_ADD_PLUGIN provides these definitions automatically.
+    # Legacy MYSQL_ADD_PLUGIN does not, so provide them explicitly.
+    #
+    target_compile_definitions(${PLUGIN_NAME} PRIVATE
+        PLUGIN_AUTHOR="${PLUGIN_AUTHOR}"
+        PLUGIN_DESCRIPTION="${PLUGIN_DESCRIPTION}"
+        PLUGIN_VERSION="${PLUGIN_VERSION}"
+        PLUGIN_HEX_VERSION=${PLUGIN_HEX_VERSION}
+        PLUGIN_LICENSE=${PLUGIN_LICENSE}
+        PLUGIN_MATURITY=${PLUGIN_MATURITY}
+        PLUGIN_NAME="${PLUGIN_NAME}"
+    )
+
+else()
+
+    message(FATAL_ERROR
+        "Cannot build ${PLUGIN_NAME}: neither MARIADB_ADD_PLUGIN nor "
+        "MYSQL_ADD_PLUGIN is available."
+    )
+
+endif()
+
+include(CPack)
 
