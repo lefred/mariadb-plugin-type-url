@@ -17,5 +17,9 @@ jobs:
   build:
     uses: lefred/mariadb-plugin-ci/.github/workflows/build-plugin-new.yml@main
     with:
-       mariadb_versions: 74647
+       mariadb_versions: |
+          74647
+          75263
        test_suites: type_url
+       almalinux_version: "10"
+       allow_partial_release: true
