@@ -20,13 +20,15 @@ jobs:
       plugin_name: type-url
       plugin_directory: type_url
       build_target: type_url
-      plugin_library: type_url.so
+      plugin_library: type_url.so      
 
       sdk_image: quay.io/lefred14/mariadb-plugin-build
       mariadb_versions: |
           13.0.2
           13.1.1
+          13.2.0
           
       cmake_options: -DPLUGIN_DATE_EXTRA=DYNAMIC
       test_suite: type_url
       run_tests: false
+      package_formats: tgz
