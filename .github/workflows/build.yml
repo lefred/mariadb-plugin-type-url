@@ -31,4 +31,3 @@ jobs:
       cmake_options: -DPLUGIN_DATE_EXTRA=DYNAMIC
       test_suite: type_url
       run_tests: false
-      package_formats: tgz
