@@ -31,3 +31,4 @@ jobs:
       cmake_options: -DPLUGIN_DATE_EXTRA=DYNAMIC
       test_suite: type_url
       run_tests: false
+      allow_partial_release: true
