@@ -21,8 +21,8 @@ jobs:
           77519
           77521
           77522
-          77100
-          77144
+          77676
+          77649
        # test_suites: type_url
        almalinux_version: "10"
        allow_partial_release: true
