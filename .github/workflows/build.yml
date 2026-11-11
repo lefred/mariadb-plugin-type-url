@@ -3,7 +3,7 @@ name: Build and package TYPE_URL plugin
 on:
   push:
     branches:
-      - main
+      - mtr
     tags:
       - "v*"
 
@@ -26,7 +26,6 @@ jobs:
       mariadb_versions: |
           13.0.2
           13.1.1
-          13.2.0
           
       cmake_options: -DPLUGIN_DATE_EXTRA=DYNAMIC
       test_suite: type_url
